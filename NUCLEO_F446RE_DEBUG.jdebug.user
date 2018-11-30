@@ -1,0 +1,22 @@
+OpenDocument="system_clock.c", FilePath="D:\Progetti\Lab\mBed\lablet_rtos_unipg\.\mbed-os\targets\TARGET_STM\TARGET_STM32F4\TARGET_STM32F446xE\TARGET_NUCLEO_F446RE\system_clock.c", Line=206
+OpenDocument="main.cpp", FilePath="D:\Progetti\Lab\mBed\lablet_rtos_unipg\.\main.cpp", Line=0
+OpenToolbar="Debug", Floating=0, x=0, y=0
+OpenWindow="Call Stack", DockArea=RIGHT, x=0, y=2, w=276, h=414, FilterBarShown=0
+OpenWindow="Registers 1", DockArea=RIGHT, x=0, y=1, w=276, h=148, FilterBarShown=0, FilteredItems=[]
+OpenWindow="Source Files", DockArea=LEFT, x=0, y=2, w=379, h=245, FilterBarShown=1
+OpenWindow="Disassembly", DockArea=RIGHT, x=0, y=0, w=276, h=147, FilterBarShown=0, ExecCountersShown=0
+OpenWindow="Source", x=0, y=0, w=0, h=0, FilterBarShown=0, ExecCountersShown=0
+OpenWindow="Memory 1", DockArea=BOTTOM, x=1, y=0, w=956, h=233, FilterBarShown=0, EditorAddress=0x0
+OpenWindow="Global Data", DockArea=RIGHT, x=0, y=2, w=276, h=414, FilterBarShown=1
+OpenWindow="Watched Data", DockArea=RIGHT, x=0, y=2, w=276, h=414, FilterBarShown=0
+OpenWindow="Functions", DockArea=LEFT, x=0, y=1, w=379, h=239, FilterBarShown=1
+OpenWindow="Call Graph", DockArea=LEFT, x=0, y=0, w=379, h=241, FilterBarShown=1
+OpenWindow="Terminal", DockArea=BOTTOM, x=0, y=0, w=963, h=233, FilterBarShown=0
+TableHeader="Global Data", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Location";"Size";"Type";"Access"], ColWidths=[160;84;84;44;100;100]
+TableHeader="Watched Data", SortCol="Expression", SortOrder="ASCENDING", VisibleCols=["Expression";"Value";"Location";"Size";"Refresh";"Type";"Access"], ColWidths=[149;138;95;44;63;845;58]
+TableHeader="Functions", SortCol="Name", SortOrder="DESCENDING", VisibleCols=["Name";"Address";"Size";"#Insts";"Class";"Source"], ColWidths=[225;75;44;57;75;187]
+TableHeader="Call Stack", SortCol="Function", SortOrder="ASCENDING", VisibleCols=["Function";"Stack Info";"Source";"PC";"Return Address"], ColWidths=[281;110;47;27;87]
+TableHeader="Source Files", SortCol="File", SortOrder="ASCENDING", VisibleCols=["File";"Status";"Size";"#Insts";"Path"], ColWidths=[155;60;44;57;47]
+TableHeader="Call Graph", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Stack Total";"Stack Local";"Depth";"Called From"], ColWidths=[195;77;78;141;81]
+TableHeader="tableWidgetSamples", SortCol="None", SortOrder="ASCENDING", VisibleCols=["Index";"Time";"Channel 0"], ColWidths=[72;102;108]
+TableHeader="Registers 1", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Description"], ColWidths=[116;37;106]
