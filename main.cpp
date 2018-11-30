@@ -2,12 +2,23 @@
 
 #include "SWO.h"
 
-static DigitalOut led1(LED1);
-static InterruptIn btn(BUTTON1);
+static DigitalOut ledOnBoard(LED1);
+static InterruptIn btnOnBoard(BUTTON1);
 
 SWO_Channel swo("channel");
 
 static Timer s_boot_timer;
+
+static Thread s_thread_1;
+
+static void thread_procedure()
+{
+    while(true)
+    {
+        wait(0.5);
+        ledOnBoard.write(!ledOnBoard.read());
+    }
+}
 
 int main()
 {
@@ -15,11 +26,7 @@ int main()
 
     s_boot_timer.start();
 
-    while(true)
-    {
-        wait(1.0);
-        swo.printf("[MAIN] %d msecs elapsed since bootstrap\n", s_boot_timer.read_ms());
-    }
+    s_thread_1.start(thread_procedure);
 
     swo.printf("[MAIN] ...exiting from main()\n");
 }
