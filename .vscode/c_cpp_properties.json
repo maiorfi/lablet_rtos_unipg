@@ -6,7 +6,7 @@
                 "${workspaceRoot}"
             ],
             "defines": [],
-            "intelliSenseMode": "clang-x64",
+            "intelliSenseMode": "gcc-x64",
             "browse": {
                 "path": [
                     "${workspaceRoot}"
@@ -14,8 +14,8 @@
                 "limitSymbolsToIncludedHeaders": false,
                 "databaseFilename": ""
             },
-            "cStandard": "c11",
-            "cppStandard": "c++17"
+            "cStandard": "c99",
+            "cppStandard": "c++11"
         }
     ],
     "version": 4

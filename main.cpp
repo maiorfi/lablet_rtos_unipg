@@ -14,6 +14,7 @@ static DigitalOut ledGreen(PG_0);
 
 static DigitalIn btnBlack(PF_2);
 
+// Diagnostic trace channel implemented at core level (much faster than UART; also I don't want to reserve a UART just for tracing)
 SWO_Channel swo("channel");
 
 static Thread s_thread_1;
