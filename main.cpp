@@ -21,20 +21,35 @@ static Thread s_thread_1;
 static Thread s_thread_2;
 static Thread s_thread_3;
 
-static void thread_procedure(std::tuple<DigitalOut *, int> *args)
+EventFlags completionFlags;
+
+#define THREAD_1_COMPLETED (1 << 0)
+#define THREAD_2_COMPLETED (1 << 1)
+#define THREAD_3_COMPLETED (1 << 2)
+
+using MyThreadsArguments = std::tuple<int, DigitalOut *, int, int, uint8_t>;
+
+static void thread_procedure(MyThreadsArguments *args)
 {
-    DigitalOut *digitalOut = std::get<0>(*args);
-    int delayMs = std::get<1>(*args);
+    int threadId = std::get<0>(*args);
+    DigitalOut *digitalOut = std::get<1>(*args);
+    int delayMs = std::get<2>(*args);
+    int iterations = std::get<3>(*args);
+    uint8_t completionFlag = std::get<4>(*args);
 
-    int state = 0;
+    swo.printf("[Thread #%d] Start...\n", threadId);
 
-    while (true)
+    for (auto i = 0; i < iterations; i++)
     {
         wait_ms(delayMs);
-        digitalOut->write(state);
-
-        state = (state ? 0 : 1);
+        digitalOut->write(!digitalOut->read());
     }
+
+    digitalOut->write(false);
+
+    swo.printf("[Thread #%d] ...done.\n", threadId);
+
+    completionFlags.set(completionFlag);
 }
 
 int main()
@@ -43,15 +58,15 @@ int main()
 
     s_boot_timer.start();
 
-    std::tuple<DigitalOut *, int> args1(&ledGreen, 500);
-    std::tuple<DigitalOut *, int> args2(&ledYellow, 200);
-    std::tuple<DigitalOut *, int> args3(&ledRed, 300);
+    MyThreadsArguments args1(1, &ledGreen, 500, 10, THREAD_1_COMPLETED);
+    MyThreadsArguments args2(2, &ledYellow, 200, 20, THREAD_2_COMPLETED);
+    MyThreadsArguments args3(3, &ledRed, 300, 30, THREAD_3_COMPLETED);
 
     s_thread_1.start(callback(thread_procedure, &args1));
     s_thread_2.start(callback(thread_procedure, &args2));
     s_thread_3.start(callback(thread_procedure, &args3));
 
-    while(true) {}
+    completionFlags.wait_all(THREAD_1_COMPLETED | THREAD_2_COMPLETED | THREAD_3_COMPLETED);
 
     swo.printf("[MAIN] ...exiting from main()\n");
 }
