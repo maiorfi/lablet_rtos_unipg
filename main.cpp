@@ -2,75 +2,129 @@
 
 #include "SWO.h"
 
-#include <tuple>
+#include <deque>
 
 static DigitalOut ledOnBoard(LED1);
 static InterruptIn btnOnBoard(BUTTON1);
 
-static DigitalOut ledRed(PD_0, true);
-static DigitalOut ledYellow(PD_1, true);
-static DigitalOut ledGreen(PG_0, true);
+static DigitalOut ledRed(PD_0);
+static DigitalOut ledYellow(PD_1);
+static DigitalOut ledGreen(PG_0);
 
-static InterruptIn btnBlack(PA_15);
+static DigitalIn btnBlack(PF_2);
 
 SWO_Channel swo("channel");
 
-static Thread s_thread_1;
-static Thread s_thread_2;
-static Thread s_thread_3;
+static Thread s_thread_reader;
+static Thread s_thread_writer;
 
-// this is a set of flags used to "orchestrate" threads
-EventFlags completionFlags;
+static Timer s_main_timer;
 
-// event flag used in same set have to be "orthogonal"
-#define THREAD_1_COMPLETED (1 << 0)
-#define THREAD_2_COMPLETED (1 << 1)
-#define THREAD_3_COMPLETED (1 << 2)
+static std::deque<int> s_intervals_queue;
+static Mutex s_intervals_queue_lock;
 
-// let's define an alias for our too-long thread argument type
-using MyThreadsArguments = std::tuple<int, DigitalOut *, int, int, uint8_t>;
-
-static void thread_procedure(MyThreadsArguments *args)
+static void reader_thread_procedure()
 {
-    // unpack passed tuple
-    int threadId = std::get<0>(*args);
-    DigitalOut *digitalOut = std::get<1>(*args);
-    int delayMs = std::get<2>(*args);
-    int iterations = std::get<3>(*args);
-    uint8_t completionFlag = std::get<4>(*args);
+    s_main_timer.start();
 
-    swo.printf("[Thread #%d] Start...\n", threadId);
+    bool latest_input_state = !btnBlack.read();
 
-    for (auto i = 0; i < iterations; i++)
+    int latest_rising_timestamp;
+
+    while (true)
     {
-        wait_ms(delayMs);
-        digitalOut->write(!digitalOut->read());
+        bool current_input_state = !btnBlack.read();
+
+        if (current_input_state != latest_input_state)
+        {
+            latest_input_state = current_input_state;
+
+            if (current_input_state)
+            {
+                latest_rising_timestamp = s_main_timer.read_ms();
+            }
+            else
+            {
+                int interval = s_main_timer.read_ms() - latest_rising_timestamp;
+
+                if (interval < 10)
+                    continue;
+
+                swo.printf("[READER] Pulse: %d ms\n", interval);
+
+                if (interval > 3000)
+                {
+                    return;
+                }
+                else
+                {
+                    s_intervals_queue_lock.lock();
+
+                    s_intervals_queue.push_back(interval);
+                    swo.printf("[READER] now there are %d item%s in queue\n", s_intervals_queue.size(), (s_intervals_queue.size() > 1) ? "s" : "");
+
+                    s_intervals_queue_lock.unlock();
+                }
+            }
+        }
     }
+}
 
-    digitalOut->write(false);
+static void writer_thread_procedure()
+{
+    int item;
 
-    swo.printf("[Thread #%d] ...done.\n", threadId);
+    while (true)
+    {
+        item=-1;
 
-    // now we signal this thread is done
-    completionFlags.set(completionFlag);
+        s_intervals_queue_lock.lock();
+
+        if (!s_intervals_queue.empty())
+        {
+            item = s_intervals_queue.front();
+            s_intervals_queue.pop_front();
+        }
+
+        s_intervals_queue_lock.unlock();
+
+        if (item!=-1)
+        {
+            swo.printf("[WRITER] dequeued item %d\n", item);
+            
+            if (item < 500)
+            {
+                ledGreen.write(true);
+                wait_ms(2000);
+                ledGreen.write(false);
+                wait_ms(500);
+            }
+            else if (item < 1000)
+            {
+                ledYellow.write(true);
+                wait_ms(2000);
+                ledYellow.write(false);
+                wait_ms(500);
+            }
+            else if (item < 1500)
+            {
+                ledRed.write(true);
+                wait_ms(2000);
+                ledRed.write(false);
+                wait_ms(500);
+            }
+        }
+    }
 }
 
 int main()
 {
     swo.printf("[MAIN] Starting main()...\n");
 
-    // define 3 different (set of) arguments
-    MyThreadsArguments args1(1, &ledGreen, 500, 10, THREAD_1_COMPLETED);
-    MyThreadsArguments args2(2, &ledYellow, 200, 20, THREAD_2_COMPLETED);
-    MyThreadsArguments args3(3, &ledRed, 300, 30, THREAD_3_COMPLETED);
+    s_thread_reader.start(reader_thread_procedure);
+    s_thread_writer.start(writer_thread_procedure);
 
-    s_thread_1.start(callback(thread_procedure, &args1));
-    s_thread_2.start(callback(thread_procedure, &args2));
-    s_thread_3.start(callback(thread_procedure, &args3));
-
-    // here main thread is waiting for --all-- threads being completed, without burning CPU cycles
-    // note: try to use wait_any() instead of wait_all()
-    completionFlags.wait_all(THREAD_1_COMPLETED | THREAD_2_COMPLETED | THREAD_3_COMPLETED);
+    s_thread_reader.join();
 
     swo.printf("[MAIN] ...exiting from main()\n");
 }
