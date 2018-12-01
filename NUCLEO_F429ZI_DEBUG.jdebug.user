@@ -1,14 +1,10 @@
+Breakpoint=main.cpp:43, State=BP_STATE_DISABLED
+Breakpoint=main.cpp:63, State=BP_STATE_DISABLED
+OpenDocument="stm32f4xx_hal_pwr.c", FilePath="D:\Progetti\Lab\mBed\lablet_rtos_unipg\.\mbed-os\targets\TARGET_STM\TARGET_STM32F4\device\stm32f4xx_hal_pwr.c", Line=389
+OpenDocument="startup_stm32f429xx.S", FilePath="D:\Progetti\Lab\mBed\lablet_rtos_unipg\.\mbed-os\targets\TARGET_STM\TARGET_STM32F4\TARGET_STM32F429xI\device\TOOLCHAIN_GCC_ARM\startup_stm32f429xx.S", Line=67
 OpenDocument="gpio_object.h", FilePath="D:\Progetti\Lab\mBed\lablet_rtos_unipg\./mbed-os/targets/TARGET_STM\gpio_object.h", Line=33
 OpenDocument="DigitalOut.h", FilePath="D:\Progetti\Lab\mBed\lablet_rtos_unipg\./mbed-os/drivers\DigitalOut.h", Line=61
-OpenDocument="main.cpp", FilePath="D:\Progetti\Lab\mBed\lablet_rtos_unipg\.\main.cpp", Line=4
-OpenDocument="mbed_error.c", FilePath="D:\Progetti\Lab\mBed\lablet_rtos_unipg\.\mbed-os\platform\mbed_error.c", Line=54
-OpenDocument="mbed_wait_api_rtos.cpp", FilePath="D:\Progetti\Lab\mBed\lablet_rtos_unipg\.\mbed-os\platform\mbed_wait_api_rtos.cpp", Line=1
-OpenDocument="core_cm4.h", FilePath="D:\Progetti\Lab\mBed\lablet_rtos_unipg\./mbed-os/cmsis/TARGET_CORTEX_M\core_cm4.h", Line=1650
-OpenDocument="tuple", FilePath="d:\gnu tools arm embedded\7 2018-q2-update\arm-none-eabi\include\c++\7.3.1\tuple", Line=323
-OpenDocument="rtx_kernel.c", FilePath="D:\Progetti\Lab\mBed\lablet_rtos_unipg\.\mbed-os\rtos\TARGET_CORTEX\rtx5\RTX\Source\rtx_kernel.c", Line=501
-OpenDocument="startup_stm32f446xx.S", FilePath="D:\Progetti\Lab\mBed\lablet_rtos_unipg\.\mbed-os\targets\TARGET_STM\TARGET_STM32F4\TARGET_STM32F446xE\device\TOOLCHAIN_GCC_ARM\startup_stm32f446xx.S", Line=64
-OpenDocument="Thread.cpp", FilePath="D:\Progetti\Lab\mBed\lablet_rtos_unipg\.\mbed-os\rtos\Thread.cpp", Line=115
-OpenDocument="system_clock.c", FilePath="D:\Progetti\Lab\mBed\lablet_rtos_unipg\.\mbed-os\targets\TARGET_STM\TARGET_STM32F4\TARGET_STM32F446xE\TARGET_NUCLEO_F446RE\system_clock.c", Line=215
+OpenDocument="main.cpp", FilePath="D:\Progetti\Lab\mBed\lablet_rtos_unipg\.\main.cpp", Line=14
 OpenToolbar="Debug", Floating=0, x=0, y=0
 OpenWindow="Call Stack", DockArea=RIGHT, x=0, y=2, w=459, h=179, FilterBarShown=0
 OpenWindow="Registers 1", DockArea=RIGHT, x=0, y=1, w=459, h=253, FilterBarShown=0, FilteredItems=[]
@@ -31,6 +27,5 @@ TableHeader="Source Files", SortCol="File", SortOrder="ASCENDING", VisibleCols=[
 TableHeader="Call Graph", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Stack Total";"Stack Local";"Depth";"Called From"], ColWidths=[195;77;78;141;81]
 TableHeader="tableWidgetSamples", SortCol="Index", SortOrder="ASCENDING", VisibleCols=["Index";"Time";"Channel 0"], ColWidths=[72;102;108]
 TableHeader="Registers 1", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Value";"Description"], ColWidths=[211;127;104]
-WatchedExpression="state", RefreshRate=5
-WatchedExpression="args1"
 WatchedExpression="std::value"
+WatchedExpression="state", RefreshRate=5
