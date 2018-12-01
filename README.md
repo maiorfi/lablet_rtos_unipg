@@ -1,3 +1,3 @@
-## STEP #1
+## STEP #2
 
 + Utilizzo dell'oggetto Timer
