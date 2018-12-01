@@ -1,4 +1,3 @@
-## STEP #5
+## STEP #6
 
-+ Utilizzo di EventFlag
-+ wait_all() e wait_any()
++ Utilizzo di Mutex

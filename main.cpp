@@ -2,7 +2,8 @@
 
 #include "SWO.h"
 
-#include <deque>
+#include <cstdlib>
+#include <ctime>
 
 static DigitalOut ledOnBoard(LED1);
 static InterruptIn btnOnBoard(BUTTON1);
@@ -15,105 +16,39 @@ static DigitalIn btnBlack(PF_2);
 
 SWO_Channel swo("channel");
 
-static Thread s_thread_reader;
-static Thread s_thread_writer;
+static Thread s_thread_1;
+static Thread s_thread_2;
+static Thread s_thread_3;
 
-static Timer s_main_timer;
+static int s_account_1=1000000;
+static int s_account_2=1000000;
 
-static std::deque<int> s_intervals_queue;
-static Mutex s_intervals_queue_lock;
+static Mutex s_lock;
 
-static void reader_thread_procedure()
+static void thread_procedure()
 {
-    s_main_timer.start();
-
-    bool latest_input_state = !btnBlack.read();
-
-    int latest_rising_timestamp;
-
     while (true)
     {
-        bool current_input_state = !btnBlack.read();
+        // get a random amount
+        int amount=100.0 + 900.0 * (((double)std::rand()) / RAND_MAX);
+        
+        // and a random direction 1->2 or 2->1
+        bool direction=(std::rand() % 2 == 0);
 
-        if (current_input_state != latest_input_state)
+        //s_lock.lock();
+
+        if(direction)
         {
-            latest_input_state = current_input_state;
-
-            if (current_input_state)
-            {
-                latest_rising_timestamp = s_main_timer.read_ms();
-            }
-            else
-            {
-                int interval = s_main_timer.read_ms() - latest_rising_timestamp;
-
-                if (interval < 10)
-                    continue;
-
-                swo.printf("[READER] Pulse: %d ms\n", interval);
-
-                if (interval > 3000)
-                {
-                    return;
-                }
-                else
-                {
-                    s_intervals_queue_lock.lock();
-
-                    s_intervals_queue.push_back(interval);
-                    swo.printf("[READER] now there are %d item%s in queue\n", s_intervals_queue.size(), (s_intervals_queue.size() > 1) ? "s" : "");
-
-                    s_intervals_queue_lock.unlock();
-                }
-            }
+            s_account_1+=amount;    // credit
+            s_account_2-=amount;    // debit
         }
-    }
-}
-
-static void writer_thread_procedure()
-{
-    int item;
-
-    while (true)
-    {
-        item=-1;
-
-        s_intervals_queue_lock.lock();
-
-        if (!s_intervals_queue.empty())
+        else
         {
-            item = s_intervals_queue.front();
-            s_intervals_queue.pop_front();
+            s_account_1-=amount;    // debit
+            s_account_2+=amount;    // credit
         }
 
-        s_intervals_queue_lock.unlock();
-
-        if (item!=-1)
-        {
-            swo.printf("[WRITER] dequeued item %d\n", item);
-            
-            if (item < 500)
-            {
-                ledGreen.write(true);
-                wait_ms(2000);
-                ledGreen.write(false);
-                wait_ms(500);
-            }
-            else if (item < 1000)
-            {
-                ledYellow.write(true);
-                wait_ms(2000);
-                ledYellow.write(false);
-                wait_ms(500);
-            }
-            else if (item < 1500)
-            {
-                ledRed.write(true);
-                wait_ms(2000);
-                ledRed.write(false);
-                wait_ms(500);
-            }
-        }
+        //s_lock.unlock();
     }
 }
 
@@ -121,10 +56,18 @@ int main()
 {
     swo.printf("[MAIN] Starting main()...\n");
 
-    s_thread_reader.start(reader_thread_procedure);
-    s_thread_writer.start(writer_thread_procedure);
+    std::srand(std::time(nullptr)); //use current time as seed for random generator
 
-    s_thread_reader.join();
+    s_thread_1.start(thread_procedure);
+    //s_thread_2.start(thread_procedure);
+    //s_thread_3.start(thread_procedure);
+
+    while(true)
+    {
+        // is sum of amounts constant as it should be?
+        swo.printf("A1: %d A2: %d - A1+A2: %d\n",s_account_1, s_account_2, s_account_1+s_account_2);
+        wait_ms(1000);
+    }
 
     swo.printf("[MAIN] ...exiting from main()\n");
 }
