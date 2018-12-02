@@ -4,9 +4,6 @@
 
 #include <tuple>
 
-static DigitalOut ledOnBoard(LED1);
-static InterruptIn btnOnBoard(BUTTON1);
-
 // let's use 3 leds to detect threads activity
 static DigitalOut ledRed(PD_0, true);
 static DigitalOut ledYellow(PD_1, true);
