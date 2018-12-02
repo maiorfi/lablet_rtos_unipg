@@ -3,7 +3,6 @@
 #include "SWO.h"
 
 static DigitalOut ledOnBoard(LED1);
-static InterruptIn btnOnBoard(BUTTON1);
 
 SWO_Channel swo("channel");
 
