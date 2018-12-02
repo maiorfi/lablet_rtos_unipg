@@ -88,7 +88,8 @@ static void writer_thread_procedure()
     {
         item=-1;
 
-        s_intervals_queue_lock.lock();
+        // TODO : proteggere la coda dall'accesso concorrente
+        // ???
 
         // memorizzo su variabili locali i dati della coda che mi interessano
         // nota: questo "caching" mi consente di tenere la coda lockata il meno possibile, massimizzando l'effettivo parallelismo
@@ -99,35 +100,24 @@ static void writer_thread_procedure()
             size=s_intervals_queue.size();
         }
 
-        s_intervals_queue_lock.unlock();
+        // TODO : uscire dalla zona di protezione dall'accesso concorrente della coda
+        // ???
 
         // c'è almeno un elemento nella coda?
         if (item!=-1)
         {
             swo.printf("[WRITER] dequeued item %d (%d in queue)\n", item, size);
             
-            // decodifico l'item (lunghezza intervallo->selezione uscita da attivare)
-            if (item < 500)
-            {
-                ledGreen.write(true);
-                wait_ms(2000);
-                ledGreen.write(false);
-                wait_ms(500);
-            }
-            else if (item < 1000)
-            {
-                ledYellow.write(true);
-                wait_ms(2000);
-                ledYellow.write(false);
-                wait_ms(500);
-            }
-            else if (item < 1500)
-            {
-                ledRed.write(true);
-                wait_ms(2000);
-                ledRed.write(false);
-                wait_ms(500);
-            }
+            // TODO : decodificare l'item (lunghezza intervallo->selezione uscita da attivare)
+            // ...in modo che:
+            // 1 - se l'impulso dura meno di mezzo secondo va attivato il led verde
+            // 2 - se l'impulso dura tra mezzo secondo ed 1 secondo va attivato il led giallo
+            // 3 - se l'impulso dura tra un secondo e un secondo e mezzo va attivato il led rosso
+            // Nota: le attivazioni devono avere durata fissa (es. 2 secondi) ed essere seguite da una
+            //       pausa (es. mezzo secondo) per poter rilevare visivamente il distacco tra attivazioni
+            //       successive dello stesso led 
+
+            // ???
         }
     }
 }
