@@ -7,12 +7,6 @@
 static DigitalOut ledOnBoard(LED1);
 static InterruptIn btnOnBoard(BUTTON1);
 
-static DigitalOut ledRed(PD_0);
-static DigitalOut ledYellow(PD_1);
-static DigitalOut ledGreen(PG_0);
-
-static DigitalIn btnBlack(PF_2);
-
 SWO_Channel swo("channel");
 
 static Thread thread_blink;                            // per il task che fa lampeggiare il led
