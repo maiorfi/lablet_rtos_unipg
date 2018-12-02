@@ -47,34 +47,34 @@ static void reader_thread_procedure()
             // è un fronte di salita?
             if (current_input_state)
             {
-                // ...memorizzo il timestamp del fronte
-                latest_rising_timestamp = s_main_timer.read_ms();
+                // TODO : memorizzare il timestamp del fronte
+                // ???
             }
             else
             {
-                // ...è un fronte di discesa, calcolo la lunghezza dell'intervallo
-                int interval = s_main_timer.read_ms() - latest_rising_timestamp;
+                // TODO : calcolare la lunghezza dell'intervallo (vedi sotto)
+                // int interval = ??? ;
 
-                // quelli troppo brevi li scarto (glitch?)
-                if (interval < 10)
-                    continue;
+                // TODO : scartare i glitch (impulsi più brevi di 10ms)
+                // ???
 
                 // intervallo di più di 3 secondi fa uscire dalla funzione
                 if (interval > 3000)
                 {
                     return;
                 }
-                else
-                {
-                    s_intervals_queue_lock.lock();
 
-                    // aggiungo l'item alla coda
-                    s_intervals_queue.push_back(interval);
-                    int size=s_intervals_queue.size();
-                    swo.printf("[READER] added item %d (%d item%s in queue)\n", interval, size, size > 1 ? "s" : "");
+                // TODO : proteggere dall'accesso concorrente la coda
+                // ???
 
-                    s_intervals_queue_lock.unlock();
-                }
+                // aggiungo l'item alla coda
+                s_intervals_queue.push_back(interval);
+                int size=s_intervals_queue.size();
+
+                swo.printf("[READER] added item %d (%d item%s in queue)\n", interval, size, size > 1 ? "s" : "");
+
+                // TODO : uscire dalla zona di "protezione" dall'accesso concorrente della coda
+                // ???
             }
         }
     }
