@@ -15,134 +15,67 @@ static DigitalIn btnBlack(PF_2);
 
 SWO_Channel swo("channel");
 
-static Thread s_thread_reader;
-static Thread s_thread_writer;
+static Thread thread_blink;                            // per il task che fa lampeggiare il led
+static Thread thread_periodic;                        // per il task periodico
+static Thread thread_button_queue_handler;             // per il task che esegue la callback creata nella coda dal gestore di interrupt del pulsante
 
-static Timer s_main_timer;
+static EventQueue eq_periodic;                        // coda che mantiene le operazioni (chiamate a funzioni) del task periodico
+static EventQueue eq_button_interrupt;                 // coda che mantiene le operazioni (chiamate a funzioni, o callback) generate dal gestore di interrupt del pulsante
 
-// Coda condivisa tra thread reader e writer
-static std::deque<int> s_intervals_queue;
+static Timer timer;                                    // cronometro che misura il tempo trascorso dal boot
 
-// Mutex per proteggere dall'accesso concorrente (potenzialmente distruttivo!) 
-static Mutex s_intervals_queue_lock;
-
-// READER : fa polling sullo stato di un ingresso e accoda le durate degli intervalli di attivazione
-static void reader_thread_procedure()
+// task (avviato nel main) eseguito periodicamente
+// nota: il parametro "c" viene passato dal main(); questo è un modo per avviare più task che eseguono indipendentemente la stessa funzione ma con contesto diverso
+void event_function_periodic(char c)
 {
-    s_main_timer.start();
+    // messaggio di debug; legge il valore del timer/cronometro
+    swo.printf("[PERIODIC - event_function_periodic] Trascorsi %d ms (%c)\n", timer.read_ms(), c);
+}
 
-    bool latest_input_state = !btnBlack.read();
-
-    int latest_rising_timestamp;
-
+// task (avviato nel main) che in un ciclo infinito effettua il toggling della porta di uscita collegata al led e attende (senza bloccare gli altri task) mezzo secondo
+void thread_function_blink(DigitalOut* pled)
+{
     while (true)
     {
-        // c'è stata una variazione di stato nell'ingresso?
-        bool current_input_state = !btnBlack.read();
-
-        if (current_input_state != latest_input_state)
-        {
-            latest_input_state = current_input_state;
-
-            // è un fronte di salita?
-            if (current_input_state)
-            {
-                // ...memorizzo il timestamp del fronte
-                latest_rising_timestamp = s_main_timer.read_ms();
-            }
-            else
-            {
-                // ...è un fronte di discesa, calcolo la lunghezza dell'intervallo
-                int interval = s_main_timer.read_ms() - latest_rising_timestamp;
-
-                // quelli troppo brevi li scarto (glitch?)
-                if (interval < 10)
-                    continue;
-
-                // intervallo di più di 3 secondi fa uscire dalla funzione
-                if (interval > 3000)
-                {
-                    return;
-                }
-                else
-                {
-                    s_intervals_queue_lock.lock();
-
-                    // aggiungo l'item alla coda
-                    s_intervals_queue.push_back(interval);
-                    int size=s_intervals_queue.size();
-                    swo.printf("[READER] added item %d (%d item%s in queue)\n", interval, size, size > 1 ? "s" : "");
-
-                    s_intervals_queue_lock.unlock();
-                }
-            }
-        }
+        pled->write(!pled->read());
+        wait_ms(500);
     }
 }
 
-// WRITER : scoda gli item (FIFO) e attiva le uscite di conseguenza, "eseguendo" un pattern applicativo
-static void writer_thread_procedure()
+void event_interrupt_handler(bool state)
 {
-    int item;
-    int size;
+    swo.printf("[EVENT-HANDLER - btn_interrupt_handler] Interrupt pulsante: %s\n", state ? "L->H" : "H->L");
+}
 
-    while (true)
-    {
-        item=-1;
+void btn_interrupt_handler()
+{
+    // Le funzioni di standard I/O della libreria standard del C non sono "interrupt-safe" (né thread-safe, peraltro), quindi la chiamata a printf() che segue NON FUNZIONA!
+    // In particolare il firmware genera un errore bloccante dettagliato nella UART di debug (default 8-N-1, 9600 baud) come "Error - writing to a file in an ISR or critical section"
+    //swo.printf("[ISR - btn_interrupt_handler] Interrupt pulsante: %s\n", btnOnBoard.read() ? "L->H" : "H->L");
 
-        s_intervals_queue_lock.lock();
+    // Questo invece lo posso fare, perché l'accodamento in una EventQueue è interrupt-safe (e pure thread-safe, peraltro)
+    eq_button_interrupt.call(&event_interrupt_handler, btnOnBoard.read());
 
-        // memorizzo su variabili locali i dati della coda che mi interessano
-        // nota: questo "caching" mi consente di tenere la coda lockata il meno possibile, massimizzando l'effettivo parallelismo
-        if (!s_intervals_queue.empty())
-        {
-            item = s_intervals_queue.front();
-            s_intervals_queue.pop_front();
-            size=s_intervals_queue.size();
-        }
-
-        s_intervals_queue_lock.unlock();
-
-        // c'è almeno un elemento nella coda?
-        if (item!=-1)
-        {
-            swo.printf("[WRITER] dequeued item %d (%d in queue)\n", item, size);
-            
-            // decodifico l'item (lunghezza intervallo->selezione uscita da attivare)
-            if (item < 500)
-            {
-                ledGreen.write(true);
-                wait_ms(2000);
-                ledGreen.write(false);
-                wait_ms(500);
-            }
-            else if (item < 1000)
-            {
-                ledYellow.write(true);
-                wait_ms(2000);
-                ledYellow.write(false);
-                wait_ms(500);
-            }
-            else if (item < 1500)
-            {
-                ledRed.write(true);
-                wait_ms(2000);
-                ledRed.write(false);
-                wait_ms(500);
-            }
-        }
-    }
+    // Da provare anche (esecuzione differita di 500ms):
+    //eq_button_interrupt.call_in(500, &event_interrupt_handler, btnOnBoard.read());
 }
 
 int main()
 {
     swo.printf("[MAIN] Starting main()...\n");
 
-    s_thread_reader.start(reader_thread_procedure);
-    s_thread_writer.start(writer_thread_procedure);
+    eq_periodic.call_every(5000, &event_function_periodic, '*');                                       // il task periodico viene "programmato" per essere eseguito una volta ogni 5 secondi
+    eq_periodic.call_every(3000, &event_function_periodic, '^');                                        // il task periodico viene "programmato" per essere eseguito una volta ogni 3 secondi
+    
+    thread_blink.start(callback(&thread_function_blink, &ledOnBoard));                                   // il task che effettua il toggling del led viene avviato qui, passando come parametro il puntatore alla porta di uscita da usare
 
-    // attendo l'uscita del thread "reader"
-    s_thread_reader.join();
+    btnOnBoard.rise(&btn_interrupt_handler);                                                             // registrazione handler (funzione di gestione, detta anche isr) L->H
+    btnOnBoard.fall(&btn_interrupt_handler);                                                             // registrazione handler (funzione di gestione, detta anche isr) H->L (stessa dell'interrupt "rise")
+    
+    timer.start();                                                                                      // il cronometro viene avviato qui
+    
+    thread_periodic.start(callback(&eq_periodic, &EventQueue::dispatch_forever));                     // il task periodico viene avviato qui
+    thread_button_queue_handler.start(callback(&eq_button_interrupt, &EventQueue::dispatch_forever));   // il task che esegue lo scodamento ed esecuzione delle callback create dall'interrupt viene avviato qui
 
     swo.printf("[MAIN] ...exiting from main()\n");
 }
