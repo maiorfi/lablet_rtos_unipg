@@ -9,9 +9,6 @@ static DigitalOut ledRed(PD_0, true);
 static DigitalOut ledYellow(PD_1, true);
 static DigitalOut ledGreen(PG_0, true);
 
-// we're not going to use this right now
-static InterruptIn btnBlack(PA_15);
-
 SWO_Channel swo("channel");
 
 // here we have 3 Thread instances
