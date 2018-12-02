@@ -5,15 +5,6 @@
 #include <cstdlib>
 #include <ctime>
 
-static DigitalOut ledOnBoard(LED1);
-static InterruptIn btnOnBoard(BUTTON1);
-
-static DigitalOut ledRed(PD_0);
-static DigitalOut ledYellow(PD_1);
-static DigitalOut ledGreen(PG_0);
-
-static DigitalIn btnBlack(PF_2);
-
 // Diagnostic trace channel implemented at core level (much faster than UART; also I don't want to reserve a UART just for tracing)
 SWO_Channel swo("channel");
 
