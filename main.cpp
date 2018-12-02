@@ -64,17 +64,15 @@ static void reader_thread_procedure()
                 {
                     return;
                 }
-                else
-                {
-                    s_intervals_queue_lock.lock();
+                
+                s_intervals_queue_lock.lock();
 
-                    // aggiungo l'item alla coda
-                    s_intervals_queue.push_back(interval);
-                    int size=s_intervals_queue.size();
-                    swo.printf("[READER] added item %d (%d item%s in queue)\n", interval, size, size > 1 ? "s" : "");
+                // aggiungo l'item alla coda
+                s_intervals_queue.push_back(interval);
+                int size=s_intervals_queue.size();
+                swo.printf("[READER] added item %d (%d item%s in queue)\n", interval, size, size > 1 ? "s" : "");
 
-                    s_intervals_queue_lock.unlock();
-                }
+                s_intervals_queue_lock.unlock();
             }
         }
     }
