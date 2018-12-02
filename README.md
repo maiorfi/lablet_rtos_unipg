@@ -1,4 +1,4 @@
-## SOLUZIONE ESERCIZIO SU RTOS
+## ESERCIZIO SU RTOS
 
 #### Problema:
 Realizzare un firmware in cui 2 thread hanno 2 funzioni distinte e rispettivamente dedicate a svolgere, senza soluzione di continuità, le seguenti attività:
